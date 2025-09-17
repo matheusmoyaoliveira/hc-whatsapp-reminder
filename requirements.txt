@@ -2,3 +2,4 @@ requests
 python-dotenv
 apscheduler
 qrcode[pil]
+flask
