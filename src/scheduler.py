@@ -14,19 +14,22 @@ with open(PACIENTES_PATH, "r", encoding="utf-8") as f:
 
 scheduler = BackgroundScheduler(timezone="America/Sao_Paulo")
 
-def enviar_para_paciente_e_responsavel(template, telefone, params, responsavel=None, link=None):
+def enviar_para_paciente_e_responsavel(template, telefone, params, responsavel=None, link=None, responsavel_ativo=True):
 
     enviar_template(template, telefone, params, link)
     print(f"✅ Enviado {template} para paciente {telefone}")
 
-    if responsavel:
+    if responsavel and responsavel_ativo:
         enviar_template(template, responsavel, params, link)
         print(f"✅ Enviado {template} para responsável {responsavel}")
+    elif responsavel and not responsavel_ativo:
+        print(f"⏸️ Responsável {responsavel} desativado — lembrete não enviado.")
 
 def agendar_lembretes(paciente: dict):
     nome = paciente["nome"]
     telefone = paciente["telefone"]
     responsavel = paciente.get("responsavel")
+    responsavel_ativo = paciente.get("responsavel_ativo", True)
     data = paciente["data"]
     hora = paciente["hora"]
     link = paciente["link"]
@@ -40,7 +43,7 @@ def agendar_lembretes(paciente: dict):
         enviar_para_paciente_e_responsavel,
         trigger="date",
         run_date=t1,
-        args=["lembrete_48h", telefone, [nome, data, hora], responsavel],
+        args=["lembrete_48h", telefone, [nome, data, hora], responsavel, None, responsavel_ativo],
         id=f"{base_id}_48h",
         misfire_grace_time=3600,
     )
@@ -50,7 +53,7 @@ def agendar_lembretes(paciente: dict):
         enviar_para_paciente_e_responsavel,
         trigger="date",
         run_date=t2,
-        args=["lembrete_24h", telefone, [nome, data, hora], responsavel],
+        args=["lembrete_24h", telefone, [nome, data, hora], responsavel, None, responsavel_ativo],
         id=f"{base_id}_24h",
         misfire_grace_time=3600,
     )
@@ -60,7 +63,7 @@ def agendar_lembretes(paciente: dict):
         enviar_para_paciente_e_responsavel,
         trigger="date",
         run_date=t3,
-        args=["lembrete__1h", telefone, [nome, hora], responsavel],
+        args=["lembrete__1h", telefone, [nome, hora], responsavel, None, responsavel_ativo],
         id=f"{base_id}_1h",
         misfire_grace_time=1800
     )
@@ -70,7 +73,7 @@ def agendar_lembretes(paciente: dict):
         enviar_para_paciente_e_responsavel,
         trigger="date",
         run_date=t4,
-        args=["consulta_comecando", telefone, [nome, hora], responsavel, link],
+        args=["consulta_comecando", telefone, [nome, hora], responsavel, link, responsavel_ativo],
         id=f"{base_id}_10min",
         misfire_grace_time=900
     )
