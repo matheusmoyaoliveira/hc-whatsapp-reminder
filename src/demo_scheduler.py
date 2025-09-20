@@ -43,28 +43,28 @@ def demo():
             enviar_para_paciente_e_responsavel,
             "date",
             run_date=start,
-            args=["lembrete_48h", telefone, [nome, data, hora], responsavel, None, responsavel_ativo],
+            args=["lembrete_48h", telefone, [nome, data, hora], responsavel]
         )
 
         scheduler.add_job(
             enviar_para_paciente_e_responsavel,
             "date",
             run_date=start + timedelta(seconds=10),
-            args=["lembrete_24h", telefone, [nome, data, hora], responsavel, None, responsavel_ativo],
+            args=["lembrete_24h", telefone, [nome, data, hora], responsavel]
         )
 
         scheduler.add_job(
             enviar_para_paciente_e_responsavel,
             "date",
             run_date=start + timedelta(seconds=20),
-            args=["lembrete__1h", telefone, [nome, hora], responsavel, None, responsavel_ativo],
+            args=["lembrete__1h", telefone, [nome, hora], responsavel]
         )
 
         scheduler.add_job(
             enviar_para_paciente_e_responsavel,
             "date",
             run_date=start + timedelta(seconds=30),
-            args=["consulta_comecando", telefone, [nome, hora], responsavel, link, responsavel_ativo],
+            args = ["consulta_comecando", telefone, [nome, hora], responsavel, link]
         )
 
     print("🚀 Demo iniciada — lembretes sairão a cada 10 segundos.")
