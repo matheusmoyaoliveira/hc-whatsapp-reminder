@@ -1,0 +1,65 @@
+1. Ativar a venv no PowerShell (Windows)
+
+No PC da FIAP, dentro da pasta do seu projeto, rode:
+
+.\venv\Scripts\Activate
+
+
+⚠️ Se der erro de permissão (Execution Policy), rode antes:
+
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
+
+Assim você não precisa alterar a política do PC da faculdade permanentemente.
+
+2. O que você vai precisar rodar na apresentação
+
+✅ webhook.py → precisa estar rodando porque é ele quem escuta os comandos (PAUSAR/RETORNAR).
+
+✅ demo_scheduler.py → é ele que simula o envio dos lembretes rapidamente (5 em 5 segundos).
+
+✅ ngrok → também precisa estar rodando, porque a Meta (WhatsApp Cloud API) só fala com URLs públicas (e a FIAP não vai liberar portas externas do PC).
+Comando:
+
+ngrok http 5000
+
+
+→ Vai gerar uma URL pública (https://xxxx.ngrok.io) que você vai colar no Meta Developers → Webhook URL.
+
+❌ scheduler.py (o de produção real) não precisa para a apresentação — ele é para quando rodar em servidor 24/7.
+
+❌ generate_qr.py e main_test.py não precisa — foram para testes paralelos.
+
+❌ scheduler_test.py não precisa — foi só para ensaiar.
+
+3. Ordem para rodar na apresentação
+
+Ativar a venv → .\venv\Scripts\Activate
+
+Rodar o webhook → python webhook.py
+
+Rodar o ngrok → ngrok http 5000
+
+Copiar a URL que aparece e colar no painel do Meta Developers como Webhook URL.
+
+Rodar o demo → python demo_scheduler.py
+
+Vai mandar os lembretes em 5s, 10s, 15s, 20s.
+
+Mostra que o paciente e o responsável recebem as mensagens.
+
+Mostra que o responsável pode pausar/retornar com os botões.
+
+4. O que mostrar na apresentação
+
+📱 Mostra no WhatsApp do seu celular e no do responsável (sua mãe).
+
+⏯️ Faz a demo:
+
+Primeiro: ambos recebem os lembretes.
+
+Depois: o responsável manda PAUSAR → CONFIRMAR e para de receber.
+
+Depois: manda RETORNAR → ATIVAR e volta a receber.
+
+Isso já fecha o ciclo e prova que a automação funciona.
