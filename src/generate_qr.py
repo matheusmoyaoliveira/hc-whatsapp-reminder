@@ -1,6 +1,6 @@
 import qrcode
 
-data = "https://hcclinicas.org/teleconsulta/demo"
+data = "https://prototipo-challenge-hc-2025.vercel.app/"
 
 img = qrcode.make(data)
 
