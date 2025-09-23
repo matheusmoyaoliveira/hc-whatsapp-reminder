@@ -1,93 +1,136 @@
-import json
-import time
-from datetime import datetime, timedelta
+import time, json, locale, logging
 from pathlib import Path
-
+from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
-from whatsapp import enviar_template, WhatsAppError
+from whatsapp import enviar_template
 
-BASE_DIR = Path(__file__).resolve().parent
-PACIENTES_PATH = BASE_DIR / "pacientes.json"
+# -------------------- logging --------------------
+def setup_logger(name: str, file_name: str) -> logging.Logger:
+    logs_dir = Path("logs")
+    logs_dir.mkdir(exist_ok=True)
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.INFO)
+    if not logger.handlers:
+        fh = logging.FileHandler(logs_dir / file_name, encoding="utf-8")
+        sh = logging.StreamHandler()
+        fmt = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
+        fh.setFormatter(fmt); sh.setFormatter(fmt)
+        logger.addHandler(fh); logger.addHandler(sh)
+    return logger
 
-with open(PACIENTES_PATH, "r", encoding="utf-8") as f:
-    pacientes = json.load(f)
+logger = setup_logger("scheduler", "scheduler.log")
 
-scheduler = BackgroundScheduler(timezone="America/Sao_Paulo")
+# -------------------- helpers --------------------
+def fmt_data_hora_ptbr(dt: datetime):
+    """retorna (data_br, dia_semana, hora_br)"""
+    try:
+        locale.setlocale(locale.LC_TIME, "pt_BR.UTF-8")
+    except Exception:
+        for cand in ("pt_BR", "Portuguese_Brazil.1252"):
+            try:
+                locale.setlocale(locale.LC_TIME, cand)
+                break
+            except Exception:
+                pass
 
-def enviar_para_paciente_e_responsavel(template, telefone, params, responsavel=None, link=None, responsavel_ativo=True):
+    dias = ["segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado","domingo"]
 
-    enviar_template(template, telefone, params, link)
-    print(f"✅ Enviado {template} para paciente {telefone}")
+    try:
+        dia_semana = dt.strftime("%A").lower()
+    except Exception:
+        dia_semana = dias[dt.weekday()]
 
-    if responsavel and responsavel_ativo:
-        enviar_template(template, responsavel, params, link)
-        print(f"✅ Enviado {template} para responsável {responsavel}")
-    elif responsavel and not responsavel_ativo:
-        print(f"⏸️ Responsável {responsavel} desativado — lembrete não enviado.")
+    if dia_semana not in dias:
+        dia_semana = dias[dt.weekday()]
 
-def agendar_lembretes(paciente: dict):
-    nome = paciente["nome"]
-    telefone = paciente["telefone"]
-    responsavel = paciente.get("responsavel")
-    responsavel_ativo = paciente.get("responsavel_ativo", True)
-    data = paciente["data"]
-    hora = paciente["hora"]
-    link = paciente["link"]
+    data_br = dt.strftime("%d/%m/%Y")
+    hora_br = dt.strftime("%H:%M")
+    return data_br, dia_semana, hora_br
 
-    consulta_dt = datetime.strptime(f"{data} {hora}", "%Y-%m-%d %H:%M")
+def enviar_para_paciente_e_responsavel(template, telefone, params, responsavel=None, link=None):
+    """envia ao paciente e, se ativo, ao responsável."""
+    try:
+        with open("src/pacientes.json", "r", encoding="utf-8") as f:
+            pacientes = json.load(f)
+    except FileNotFoundError:
+        logger.error("pacientes.json não encontrado.")
+        return
 
-    base_id = f"{telefone}_{data}_{hora}".replace(":", "-")
+    try:
+        enviar_template(template, telefone, params, link)
+        print(f"✅ Enviado {template} para paciente {telefone}")
+        logger.info(f"Enviado {template} para paciente {telefone} | params={params} | link={link}")
+    except Exception as e:
+        logger.error(f"Falha ao enviar {template} para paciente {telefone}: {e}")
+        return
 
-    t1 = consulta_dt - timedelta(hours=48)
-    scheduler.add_job(
-        enviar_para_paciente_e_responsavel,
-        trigger="date",
-        run_date=t1,
-        args=["lembrete_48h", telefone, [nome, data, hora], responsavel, None, responsavel_ativo],
-        id=f"{base_id}_48h",
-        misfire_grace_time=3600,
-    )
+    if responsavel:
+        pac = next((p for p in pacientes if p.get("telefone") == telefone), None)
+        ativo = pac.get("responsavel_ativo", True) if pac else True
+        if ativo:
+            try:
+                enviar_template(template, responsavel, params, link)
+                print(f"✅ Enviado {template} para responsável {responsavel}")
+                logger.info(f"Enviado {template} para responsável {responsavel} | params={params} | link={link}")
+            except Exception as e:
+                logger.error(f"Falha ao enviar {template} para responsável {responsavel}: {e}")
+        else:
+            print(f"⏸️ Responsável {responsavel} desativado — lembrete não enviado.")
+            logger.warning(f"Responsável {responsavel} desativado — lembrete não enviado.")
 
-    t2 = consulta_dt - timedelta(hours=24)
-    scheduler.add_job(
-        enviar_para_paciente_e_responsavel,
-        trigger="date",
-        run_date=t2,
-        args=["lembrete_24h", telefone, [nome, data, hora], responsavel, None, responsavel_ativo],
-        id=f"{base_id}_24h",
-        misfire_grace_time=3600,
-    )
+# -------------------- agendador real --------------------
+def run():
+    with open("src/pacientes.json", "r", encoding="utf-8") as f:
+        pacientes = json.load(f)
 
-    t3 = consulta_dt - timedelta(hours=1)
-    scheduler.add_job(
-        enviar_para_paciente_e_responsavel,
-        trigger="date",
-        run_date=t3,
-        args=["lembrete__1h", telefone, [nome, hora], responsavel, None, responsavel_ativo],
-        id=f"{base_id}_1h",
-        misfire_grace_time=1800
-    )
+    scheduler = BackgroundScheduler()
 
-    t4 = consulta_dt - timedelta(minutes=10)
-    scheduler.add_job(
-        enviar_para_paciente_e_responsavel,
-        trigger="date",
-        run_date=t4,
-        args=["consulta_comecando", telefone, [nome, hora], responsavel, link, responsavel_ativo],
-        id=f"{base_id}_10min",
-        misfire_grace_time=900
-    )
+    now = datetime.now()
+    for p in pacientes:
+        nome        = p["nome"]
+        telefone    = p["telefone"]
+        responsavel = p.get("responsavel")
+        data_str    = p["data"]  # "15/09/2025" ou "15/09/2025, segunda-feira"
+        hora_str    = p["hora"]
+        link        = p.get("link")
 
-    print(f"📅 Lembretes agendados para {nome} ({telefone}) em {data} {hora}")
+        # parse seguro
+        data_somente = data_str.split(",")[0].strip()
+        consulta_dt  = datetime.strptime(f"{data_somente} {hora_str}", "%d/%m/%Y %H:%M")
+        data_br, dia_semana, hora_br = fmt_data_hora_ptbr(consulta_dt)
+        data_amigavel = f"{data_br}, {dia_semana}"
 
-for paciente in pacientes:
-    agendar_lembretes(paciente)
+        print(f"🗓️ {nome} ({telefone}) | {data_amigavel} às {hora_br}")
+        logger.info(f"Agendando {nome} | tel={telefone} | data={data_amigavel} | hora={hora_br}")
 
-scheduler.start()
-print("Scheduler iniciado. Aguardando envios...")
+        def agendar(delta, template, params, with_link=False):
+            run_at = consulta_dt - delta
+            if run_at <= now:
+                logger.warning(f"Ignorando {template} para {telefone} - horário passado ({run_at}).")
+                return
+            scheduler.add_job(
+                enviar_para_paciente_e_responsavel, "date", run_date=run_at,
+                args=[template, telefone, params, responsavel, link if with_link else None],
+                misfire_grace_time=300, coalesce=True
+            )
+            logger.info(f"Job {template} agendado para {run_at.isoformat()} | tel={telefone}")
 
-try:
-    while True:
-        time.sleep(5)
-except (KeyboardInterrupt, SystemExit):
-    scheduler.shutdown()
+        # 48h, 24h, 1h e 10 min antes
+        agendar(timedelta(hours=48), "lembrete_48h", [nome, data_amigavel, hora_br])
+        agendar(timedelta(hours=24), "lembrete_24h", [nome, data_amigavel, hora_br])
+        agendar(timedelta(hours=1),  "lembrete__1h", [nome, hora_br])
+        agendar(timedelta(minutes=10), "consulta_comecando", [nome, hora_br], with_link=True)
+
+    print("🚀 Scheduler iniciado. Aguardando envios...")
+    scheduler.start()
+    try:
+        while True:
+            time.sleep(60)
+    except KeyboardInterrupt:
+        print("🛑 Encerrando...")
+    finally:
+        scheduler.shutdown()
+        logger.info("Scheduler finalizado.")
+
+if __name__ == "__main__":
+    run()

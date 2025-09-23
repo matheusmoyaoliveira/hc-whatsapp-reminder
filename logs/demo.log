@@ -1,0 +1,10 @@
+23/09/2025 16:15:17 [INFO] [DEMO] Agendando para Matheus Moya | data=15/09/2025, segunda-feira | hora=15:00 | tel=5511919941208
+23/09/2025 16:15:19 [INFO] Enviado lembrete_48h para paciente 5511919941208 | params=['Matheus Moya', '15/09/2025, segunda-feira', '15:00'] | link=None
+23/09/2025 16:15:19 [WARNING] Responsável 5513998085263 desativado — lembrete não enviado.
+23/09/2025 16:15:28 [INFO] Enviado lembrete_24h para paciente 5511919941208 | params=['Matheus Moya', '15/09/2025, segunda-feira', '15:00'] | link=None
+23/09/2025 16:15:28 [WARNING] Responsável 5513998085263 desativado — lembrete não enviado.
+23/09/2025 16:15:38 [INFO] Enviado lembrete__1h para paciente 5511919941208 | params=['Matheus Moya', '15:00'] | link=None
+23/09/2025 16:15:38 [WARNING] Responsável 5513998085263 desativado — lembrete não enviado.
+23/09/2025 16:15:48 [INFO] Enviado consulta_comecando para paciente 5511919941208 | params=['Matheus Moya', '15:00'] | link=https://hcclinicas.org/teleconsulta/demo
+23/09/2025 16:15:48 [WARNING] Responsável 5513998085263 desativado — lembrete não enviado.
+23/09/2025 16:15:57 [INFO] Demo finalizada.

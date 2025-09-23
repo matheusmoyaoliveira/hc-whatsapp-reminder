@@ -1,0 +1,32 @@
+23/09/2025 16:08:51 [INFO] [DEMO] Agendando para Matheus Moya | data=15/09/2025, segunda-feira | hora=15:00 | tel=5511919941208
+23/09/2025 16:08:51 [INFO] Adding job tentatively -- it will be properly scheduled when the scheduler starts
+23/09/2025 16:08:51 [INFO] Adding job tentatively -- it will be properly scheduled when the scheduler starts
+23/09/2025 16:08:51 [INFO] Adding job tentatively -- it will be properly scheduled when the scheduler starts
+23/09/2025 16:08:51 [INFO] Adding job tentatively -- it will be properly scheduled when the scheduler starts
+23/09/2025 16:08:51 [INFO] Added job "enviar_para_paciente_e_responsavel" to job store "default"
+23/09/2025 16:08:51 [INFO] Added job "enviar_para_paciente_e_responsavel" to job store "default"
+23/09/2025 16:08:51 [INFO] Added job "enviar_para_paciente_e_responsavel" to job store "default"
+23/09/2025 16:08:51 [INFO] Added job "enviar_para_paciente_e_responsavel" to job store "default"
+23/09/2025 16:08:51 [INFO] Scheduler started
+23/09/2025 16:08:51 [INFO] Running job "enviar_para_paciente_e_responsavel (trigger: date[2025-09-23 16:08:51 -03], next run at: 2025-09-23 16:08:51 -03)" (scheduled at 2025-09-23 16:08:51.332421-03:00)
+23/09/2025 16:08:51 [INFO] Removed job 925392e5aed6414bb3fad7a541b09dfc
+23/09/2025 16:08:52 [INFO] Enviado lembrete_48h para paciente 5511919941208 | params=['Matheus Moya', '15/09/2025, segunda-feira', '15:00'] | link=None
+23/09/2025 16:08:52 [WARNING] Responsável 5513998085263 desativado — lembrete não enviado.
+23/09/2025 16:08:52 [INFO] Job "enviar_para_paciente_e_responsavel (trigger: date[2025-09-23 16:08:51 -03], next run at: 2025-09-23 16:08:51 -03)" executed successfully
+23/09/2025 16:09:01 [INFO] Removed job d8a490618d1e40429abcdb9a2911b5f0
+23/09/2025 16:09:01 [INFO] Running job "enviar_para_paciente_e_responsavel (trigger: date[2025-09-23 16:09:01 -03], next run at: 2025-09-23 16:09:01 -03)" (scheduled at 2025-09-23 16:09:01.332421-03:00)
+23/09/2025 16:09:02 [INFO] Enviado lembrete_24h para paciente 5511919941208 | params=['Matheus Moya', '15/09/2025, segunda-feira', '15:00'] | link=None
+23/09/2025 16:09:02 [WARNING] Responsável 5513998085263 desativado — lembrete não enviado.
+23/09/2025 16:09:02 [INFO] Job "enviar_para_paciente_e_responsavel (trigger: date[2025-09-23 16:09:01 -03], next run at: 2025-09-23 16:09:01 -03)" executed successfully
+23/09/2025 16:09:11 [INFO] Removed job c523d32ccd134acdb1ab22d25b68b9e3
+23/09/2025 16:09:11 [INFO] Running job "enviar_para_paciente_e_responsavel (trigger: date[2025-09-23 16:09:11 -03], next run at: 2025-09-23 16:09:11 -03)" (scheduled at 2025-09-23 16:09:11.332421-03:00)
+23/09/2025 16:09:12 [INFO] Enviado lembrete__1h para paciente 5511919941208 | params=['Matheus Moya', '15:00'] | link=None
+23/09/2025 16:09:12 [WARNING] Responsável 5513998085263 desativado — lembrete não enviado.
+23/09/2025 16:09:12 [INFO] Job "enviar_para_paciente_e_responsavel (trigger: date[2025-09-23 16:09:11 -03], next run at: 2025-09-23 16:09:11 -03)" executed successfully
+23/09/2025 16:09:21 [INFO] Removed job 6ef7a8c64fe74d91b91fd950672dc49a
+23/09/2025 16:09:21 [INFO] Running job "enviar_para_paciente_e_responsavel (trigger: date[2025-09-23 16:09:21 -03], next run at: 2025-09-23 16:09:21 -03)" (scheduled at 2025-09-23 16:09:21.332421-03:00)
+23/09/2025 16:09:22 [INFO] Enviado consulta_comecando para paciente 5511919941208 | params=['Matheus Moya', '15:00'] | link=https://hcclinicas.org/teleconsulta/demo
+23/09/2025 16:09:22 [WARNING] Responsável 5513998085263 desativado — lembrete não enviado.
+23/09/2025 16:09:22 [INFO] Job "enviar_para_paciente_e_responsavel (trigger: date[2025-09-23 16:09:21 -03], next run at: 2025-09-23 16:09:21 -03)" executed successfully
+23/09/2025 16:09:31 [INFO] Scheduler has been shut down
+23/09/2025 16:09:31 [INFO] Demo finalizada.

@@ -1,154 +1,160 @@
-# HC WhatsApp Reminder 📱💬
+# HC WhatsApp Reminder
 
-Sistema de lembretes automáticos via WhatsApp para consultas de **telemedicina** no Hospital das Clínicas.  
-O objetivo é **reduzir o absenteísmo** (faltas em consultas) enviando mensagens de aviso tanto para os **pacientes** quanto para seus **responsáveis/cuidadores**.
+Sistema de envio de lembretes automáticos via WhatsApp Cloud API,
+integrado ao Meta Developers.
 
----
+------------------------------------------------------------------------
 
 ## 🚀 Funcionalidades
-- Envio automático de **4 lembretes** antes da consulta:
-  - 48 horas antes
-  - 24 horas antes
-  - 1 hora antes
-  - 10 minutos antes (com link direto para a teleconsulta)
-- Cada lembrete possui **template personalizado**.
-- **Responsável pode pausar/reativar** o recebimento de mensagens a qualquer momento:
-  - Digita `PAUSAR` → botão `CONFIRMAR` → para de receber.
-  - Digita `RETORNAR` → botão `ATIVAR` → volta a receber.
-- Arquivo `pacientes.json` guarda todos os pacientes, números de telefone e status do responsável (`responsavel_ativo`).
-- Integração com a **WhatsApp Cloud API (Meta)** + **Flask webhook** + **ngrok**.
 
----
+-   Envio de lembretes de consultas para pacientes e responsáveis
+-   Possibilidade de **pausar e reativar** lembretes via WhatsApp com
+    botões interativos
+-   Agendamento de mensagens com **APScheduler**
+-   Templates configurados na Cloud API do WhatsApp
+-   **Logs automáticos** de execução para auditoria
 
-## 📂 Estrutura do Projeto
+------------------------------------------------------------------------
 
-```
-hc-whatsapp-reminder/
-│── src/
-│   ├── webhook.py          # Servidor Flask que recebe mensagens e trata comandos PAUSAR/RETORNAR
-│   ├── scheduler.py        # Scheduler real (com horários em horas/dias)
-│   ├── demo_scheduler.py   # Scheduler de demonstração (envios a cada 5s, usado na apresentação)
-│   ├── scheduler_test.py   # Scheduler de testes
-│   ├── whatsapp.py         # Funções de envio via API do WhatsApp
-│   ├── pacientes.json      # Base local de pacientes + responsáveis
-│   ├── generate_qr.py      # Geração de QR Code (extra para demonstração)
-│   ├── main_test.py        # Testes iniciais
-│
-│── .env                    # Variáveis de ambiente (token, phone_id, versão da API, verify token)
-│── requirements.txt        # Dependências do Python
-│── README.md               # Este documento
-```
+## 📂 Estrutura do projeto
 
----
+    .
+    ├── src/
+    │   ├── webhook.py          # Webhook Flask para receber mensagens do WhatsApp
+    │   ├── scheduler.py        # Agendador real (produção)
+    │   ├── demo_scheduler.py   # Versão de testes (lembretes a cada 10s)
+    │   ├── whatsapp.py         # Funções auxiliares de envio
+    │   └── pacientes.json      # Base de dados simples
+    ├── .env                    # Configurações de ambiente
+    └── README.md               # Documentação
 
-## ⚙️ Pré-requisitos
+------------------------------------------------------------------------
 
-- Python 3.10+
-- Conta configurada no [Meta for Developers](https://developers.facebook.com/)
-  - **WhatsApp Business Cloud API** habilitada
-  - **Phone Number ID** configurado
-  - **Access Token** (temporário ou de longa duração)
-  - **Webhook** validado (com VERIFY_TOKEN)
-- [ngrok](https://ngrok.com/) para expor o servidor local
+## ⚙️ Requisitos
 
----
+-   Python 3.9+
+-   Conta no [Meta Developers](https://developers.facebook.com/)
+-   WhatsApp Cloud API configurada
+-   Token de acesso e `PHONE_NUMBER_ID`
 
-## 🔧 Instalação
+------------------------------------------------------------------------
 
-1. Clone este repositório:
-   ```bash
-   git clone https://github.com/matheusmoyaoliveira/hc-whatsapp-reminder.git
-   cd hc-whatsapp-reminder
-   ```
+## 🔧 Configuração
 
-2. Crie e ative um ambiente virtual:
-   ```powershell
-   python -m venv venv
-   .\venv\Scripts\Activate
-   ```
+1.  Clone o repositório:
 
-   ⚠️ Se o PowerShell bloquear:
-   ```powershell
-   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-   ```
+    ``` bash
+    git clone https://github.com/matheusmoyaoliveira/hc-whatsapp-reminder.git
+    cd hc-whatsapp-reminder
+    ```
 
-3. Instale as dependências:
-   ```bash
-   pip install -r requirements.txt
-   ```
+2.  Crie e ative o ambiente virtual:
 
-4. Configure o arquivo **.env** com os dados da sua aplicação no Meta:
+    ``` powershell
+    python -m venv .venv
+    .venv\Scripts\Activate.ps1   # Windows PowerShell
+    ```
 
-   ```ini
-   WEBHOOK_VERIFY_TOKEN=token123
-   WHATSAPP_API_VERSION=v23.0
-   PHONE_NUMBER_ID=seu_phone_number_id
-   WHATSAPP_TOKEN=seu_access_token
-   DEFAULT_LANG=pt_BR
-   ```
+3.  Instale as dependências:
 
----
+    ``` bash
+    pip install -r requirements.txt
+    ```
 
-## ▶️ Como rodar
+4.  Configure o arquivo `.env`:
 
-### 1. Inicie o webhook (Flask)
-```powershell
+    ``` env
+    WEBHOOK_VERIFY_TOKEN=token123
+    WHATSAPP_API_VERSION=v23.0
+    PHONE_NUMBER_ID=xxxxxxxxxxxx
+    WHATSAPP_TOKEN=EAA...
+    DEFAULT_LANG=pt_BR
+    ```
+
+------------------------------------------------------------------------
+
+## ▶️ Executando
+
+### 1. Subir o Webhook
+
+``` bash
 python src/webhook.py
 ```
 
-### 2. Exponha o servidor com ngrok
-```powershell
+-   Use o [ngrok](https://ngrok.com/) para expor:
+
+``` bash
 ngrok http 5000
 ```
-- Copie a URL HTTPS gerada e cole no **Meta Developers → Webhooks → Callback URL**.  
-- Use o mesmo `WEBHOOK_VERIFY_TOKEN` definido no `.env`.
 
-### 3. Execute o demo scheduler
-```powershell
+-   Configure a URL do ngrok no painel do Meta Developers.
+
+------------------------------------------------------------------------
+
+### 2. Rodar a versão de teste (Demo)
+
+``` bash
 python src/demo_scheduler.py
 ```
 
-➡️ Este modo de demonstração envia **todos os lembretes em 5 segundos de intervalo**.  
-Ideal para a **apresentação**.
+-   Os lembretes são enviados **a cada 10 segundos**.
+-   Ótimo para apresentações e validação.
 
----
+------------------------------------------------------------------------
 
-## 🎬 Fluxo de Demonstração (apresentação)
+### 3. Rodar a versão real (Produção)
 
-1. **Paciente e responsável** recebem os 4 lembretes normalmente.  
-2. No celular do **responsável**, enviar `PAUSAR`.  
-   - O bot responde com botão **CONFIRMAR**.  
-   - Ao clicar, recebe: `✅ Você parou de receber os lembretes.`  
-   - O campo `"responsavel_ativo": false` é salvo no `pacientes.json`.  
-3. Rodar o `demo_scheduler.py` novamente → **somente o paciente recebe**.  
-4. No celular do responsável, enviar `RETORNAR`.  
-   - O bot responde com botão **ATIVAR**.  
-   - Ao clicar, recebe: `✅ Você voltou a receber os lembretes.`  
-   - O campo `"responsavel_ativo": true` é restaurado.  
-5. Rodar de novo o `demo_scheduler.py` → **paciente e responsável recebem**.
+``` bash
+python src/scheduler.py
+```
 
----
+-   Os lembretes seguem o agendamento correto (48h, 24h, 1h, etc).
+-   Pacientes e responsáveis definidos no `pacientes.json`.
 
-## 📖 Tecnologias usadas
-- Python 3.10
-- Flask (webhook)
-- APScheduler (agendamento)
-- Requests (requisições à API da Meta)
-- ngrok (exposição local)
-- WhatsApp Cloud API (Meta)
+------------------------------------------------------------------------
 
----
+## 📊 Logs
 
-## 👨‍💻 Autores
-Projeto desenvolvido como parte do **Challenge FIAP** (2025)  
-Grupo: **HC Absenteísmo – Lembretes via WhatsApp**  
-Integrantes:
-- Matheus Moya Oliveira  
-- [Demais colegas do grupo, adicionar aqui]
+O sistema gera logs automáticos em `logs/app.log`:
 
----
+-   Sucesso no envio
+-   Falha ao chamar a API
+-   Responsável desativado
+-   Eventos de webhook
+
+Exemplo:
+
+    2025-09-19 18:45:12 [INFO] Enviado lembrete_24h para paciente 5511999999999
+    2025-09-19 18:45:15 [INFO] Responsável 5511988888888 desativado — lembrete não enviado.
+    2025-09-19 18:45:20 [ERROR] WhatsApp API retornou erro 400 ao enviar lembrete_48h
+
+------------------------------------------------------------------------
 
 ## 📌 Observações
-- Em produção real, recomenda-se rodar o `scheduler.py` (com horários em horas/dias) em servidor (Heroku, Render, AWS etc.).  
-- O `demo_scheduler.py` foi feito apenas para **apresentações e testes rápidos**.  
-- Tokens de acesso expiram → usar tokens de longa duração ou renovação automática no Meta Developers.
+
+-   `demo_scheduler.py` serve apenas para demonstração
+
+-   `scheduler.py` é o código de produção
+
+-   O `pacientes.json` deve conter os pacientes e responsáveis no
+    formato:
+
+    ``` json
+    [
+      {
+        "nome": "Matheus Moya",
+        "telefone": "5511912345678",
+        "responsavel": "5511998765432",
+        "responsavel_ativo": true,
+        "data": "15/09/2025",
+        "hora": "15:00",
+        "link": "https://hcclinicas.org/teleconsulta/demo"
+      }
+    ]
+    ```
+
+------------------------------------------------------------------------
+
+## 👨‍💻 Autor
+
+Matheus Moya Oliveira -- FIAP -- 1TDS-PV
